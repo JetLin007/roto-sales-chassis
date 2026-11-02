@@ -29,6 +29,7 @@
 /* USER CODE BEGIN Includes */
 #include "ota_manager.h"
 #include "app_ota.h"
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -62,6 +63,26 @@ void MX_FREERTOS_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+/* printf 重定向到 USART1 (PB6=TX, PB7=RX, 115200) */
+#include <stdio.h>
+extern UART_HandleTypeDef huart1;
+
+int _write(int fd, char *ptr, int len)
+{
+  (void)fd;
+  /* 等待上一次发送完成再发送，避免覆盖 */
+  while (__HAL_UART_GET_FLAG(&huart1, UART_FLAG_TXE) == RESET);
+  HAL_UART_Transmit(&huart1, (uint8_t *)ptr, (uint16_t)len, 1000);
+  return len;
+}
+
+int fputc(int ch, FILE *f)
+{
+  (void)f;
+  HAL_UART_Transmit(&huart1, (uint8_t *)&ch, 1, 1000);
+  return ch;
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -71,7 +92,7 @@ void MX_FREERTOS_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+  SCB->VTOR = 0x08010800;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -103,6 +124,11 @@ int main(void)
   App_OTA_CheckAndConfirm(); // 2. 检查并确认固件状态
   /* USER CODE END 2 */
 
+  printf("\r\n===== APP BOOT SUCCESS =====\r\n");
+  printf("OTA_Manager_Init done\r\n");
+  printf("App_OTA_CheckAndConfirm done\r\n");
+  printf("Starting FreeRTOS scheduler...\r\n");
+
   /* Call init function for freertos objects (in freertos.c) */
   MX_FREERTOS_Init();
 
@@ -119,6 +145,8 @@ int main(void)
   }
   /* USER CODE END 3 */
 }
+
+
 
 /**
   * @brief System Clock Configuration

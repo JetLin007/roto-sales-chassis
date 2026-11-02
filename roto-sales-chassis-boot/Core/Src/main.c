@@ -55,7 +55,22 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+void Error_Blink_LED(void) {
+    // 纯硬件级别的点灯，不需要 HAL 库
+    // 开启 GPIOE 时钟
+    RCC->AHB2ENR |= (1 << 4); 
+    
+    // 配置 PE0 为输出
+    GPIOE->MODER &= ~(3 << 0); 
+    GPIOE->MODER |= (1 << 0); 
+    
+    while(1) {
+        GPIOE->BSRR = (1 << 16); // 灭 PE0 (高电平)
+        for(volatile int i=0; i<500000; i++);
+        GPIOE->BSRR = (1 << 0);  // 亮 PE0 (低电平)
+        for(volatile int i=0; i<500000; i++);
+    }
+}
 /* USER CODE END 0 */
 
 /**
@@ -66,6 +81,11 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
 
+  // 在最开头强制点亮 PE0 (低电平)
+  RCC->AHB2ENR |= (1 << 4);     // 开 GPIOE 时钟
+  GPIOE->MODER &= ~(3 << 0);    // 清空 PE0 模式
+  GPIOE->MODER |= (1 << 0);     // PE0 设为输出
+  GPIOE->BSRR = (1 << 0);       // 输出低电平，点亮 LED
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -160,6 +180,7 @@ void Error_Handler(void)
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
   __disable_irq();
+  Error_Blink_LED(); // 如果时钟配置失败，红灯会慢闪
   while (1)
   {
   }

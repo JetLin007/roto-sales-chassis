@@ -178,6 +178,8 @@
 
 void SystemInit(void)
 {
+  /* 向量表重定向到 App 起始地址（从 Bootloader 跳转后必须设置） */
+  SCB->VTOR = 0x08010800;
   /* FPU settings ------------------------------------------------------------*/
   #if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
     SCB->CPACR |= ((3UL << (10*2))|(3UL << (11*2)));  /* set CP10 and CP11 Full Access */
@@ -281,5 +283,3 @@ void SystemCoreClockUpdate(void)
 /**
   * @}
   */
-
-

@@ -61,8 +61,9 @@ _Min_Stack_Size = 0x400; /* required amount of stack */
 /* Specify the memory areas */
 MEMORY
 {
-RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 128K
-FLASH (rx)      : ORIGIN = 0x8000000, LENGTH = 512K
+  RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 128K
+  /* APP 必须是 0x08010800 起步！ */
+  FLASH    (rx)    : ORIGIN = 0x08010800,   LENGTH = 446K 
 }
 
 /* Define output sections */
@@ -176,14 +177,14 @@ SECTIONS
   
 
   /* Remove information from the standard libraries */
+  /*
   /DISCARD/ :
   {
     libc.a ( * )
     libm.a ( * )
     libgcc.a ( * )
   }
+  */
 
   .ARM.attributes 0 : { *(.ARM.attributes) }
 }
-
-

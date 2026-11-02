@@ -15,6 +15,9 @@ static Flash_Status_t stm32_flash_erase_sector(uint32_t addr) {
     // 检查是否 2KB 对齐 (G474 Page size = 2KB)
     if (addr % 2048 != 0) return FLASH_ERR_ALIGN;
 
+    // 1. 关全局中断 (极其重要，防止擦除期间被中断打断导致总线卡死)
+    __disable_irq();
+
     // 结合正点原子手册 433 页提示：擦除期间必须关闭数据缓存
     FLASH->ACR &= ~(1 << 10); 
 
@@ -25,10 +28,12 @@ static Flash_Status_t stm32_flash_erase_sector(uint32_t addr) {
 
     if (HAL_FLASHEx_Erase(&EraseInitStruct, &PageError) != HAL_OK) {
         FLASH->ACR |= (1 << 10); // 恢复缓存
+        __enable_irq(); // 恢复中断
         return FLASH_ERR_ERASE;
     }
 
     FLASH->ACR |= (1 << 10); // 恢复缓存
+    __enable_irq(); // 恢复中断
     return FLASH_OK;
 }
 
