@@ -15,38 +15,38 @@
             "problemMatcher": ["$gcc"]
         },
         {
-            "label": "Build STM32 Project",
-            "type": "shell",
-            "command": "cmake",
-            "args": [
-                "--build",
-                "build"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "problemMatcher": ["$gcc"]
-        },
-        {
-            "label": "Flash to STM32 (OpenOCD)",
+            "label": "Flash ST-Link (BOOT)",
             "type": "shell",
             "command": "E:/tools/OpenOCD-20260302-0.12.0/bin/openocd.exe",
             "args": [
-                "-f", "interface/cmsis-dap.cfg",
+                "-f", "interface/stlink.cfg",
                 "-f", "target/stm32g4x.cfg",
-                "-c", "program ${workspaceFolder}/build/roto_sales_chassis_app.elf verify reset exit"
+                "-f", "flash_boot.cfg"
             ],
             "options": {
                 "env": {
                     "OPENOCD_SCRIPTS": "E:/tools/OpenOCD-20260302-0.12.0/share/openocd/scripts"
-                }
+                },
+                "cwd": "${workspaceFolder}"
             },
-            "dependsOn": ["Build STM32 Project"],
-            "presentation": {
-                "reveal": "always",
-                "panel": "new"
-            }
+            "problemMatcher": []
+        },
+        {
+            "label": "Flash ST-Link (APP)",
+            "type": "shell",
+            "command": "E:/tools/OpenOCD-20260302-0.12.0/bin/openocd.exe",
+            "args": [
+                "-f", "interface/stlink.cfg",
+                "-f", "target/stm32g4x.cfg",
+                "-f", "flash_app.cfg"
+            ],
+            "options": {
+                "env": {
+                    "OPENOCD_SCRIPTS": "E:/tools/OpenOCD-20260302-0.12.0/share/openocd/scripts"
+                },
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
         }
     ]
 }

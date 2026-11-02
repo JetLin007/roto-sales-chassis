@@ -5,29 +5,37 @@
             "name": "Debug APP",
             "type": "cortex-debug",
             "request": "launch",
+            "armToolchainPath": "E:/tools/arm-gnu-toolchain-15.3.rel2-mingw-w64-x86_64-arm-none-eabi/bin",
             "cwd": "${workspaceFolder}/roto-sales-chassis-app",
             "executable": "${workspaceFolder}/roto-sales-chassis-app/build/roto_sales_chassis_app.elf",
             "serverpath": "E:/tools/OpenOCD-20260302-0.12.0/bin/openocd.exe",
             "servertype": "openocd",
             "device": "STM32G474VE",
-            "configFiles": ["interface/cmsis-dap.cfg", "target/stm32g4x.cfg"],
+            //"configFiles": ["interface/cmsis-dap.cfg", "target/stm32g4x.cfg"],
+            "configFiles": ["interface/stlink.cfg", "target/stm32g4x.cfg"],
+            
             "searchDir": ["E:/tools/OpenOCD-20260302-0.12.0/share/openocd/scripts"],
             "runToEntryPoint": "main",
             "preLaunchTask": "Build APP"
+            
         },
         {
             "name": "Debug BOOT",
             "type": "cortex-debug",
             "request": "launch",
+            "armToolchainPath": "E:/tools/arm-gnu-toolchain-15.3.rel2-mingw-w64-x86_64-arm-none-eabi/bin",
             "cwd": "${workspaceFolder}/roto-sales-chassis-boot",
             "executable": "${workspaceFolder}/roto-sales-chassis-boot/build/roto_sales_chassis_boot.elf",
             "serverpath": "E:/tools/OpenOCD-20260302-0.12.0/bin/openocd.exe",
             "servertype": "openocd",
             "device": "STM32G474VE",
-            "configFiles": ["interface/cmsis-dap.cfg", "target/stm32g4x.cfg"],
+            //"configFiles": ["interface/cmsis-dap.cfg", "target/stm32g4x.cfg"],
+            "configFiles": ["interface/stlink.cfg", "target/stm32g4x.cfg"],
+            
             "searchDir": ["E:/tools/OpenOCD-20260302-0.12.0/share/openocd/scripts"],
             "runToEntryPoint": "main",
             "preLaunchTask": "Build BOOT"
+            
         }
     ]
 }

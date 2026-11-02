@@ -25,7 +25,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdio.h>
+#include "app_ota_download.h"
+#include "app_ymodem.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -106,10 +108,22 @@ void StartDefaultTask(void const * argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
+  osDelay(5000); 
+  
+  printf("[APP] Ready to receive YModem...\r\n");
+  
+  // 1. 初始化下载区
+  App_OTA_Download_Init();
+  
+  // 2. 初始化 YModem 并发送 'C' 请求上位机发数据
+  App_YModem_Init();
+
   for(;;)
   {
-    osDelay(1);
+    // 这里放你原来的电机控制、心跳等逻辑
+    osDelay(1000);
   }
+  
   /* USER CODE END StartDefaultTask */
 }
 
