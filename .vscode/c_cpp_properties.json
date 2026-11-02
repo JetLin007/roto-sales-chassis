@@ -1,0 +1,23 @@
+{
+    "configurations": [
+        {
+            "name": "STM32G474",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "defines": [
+                "USE_HAL_DRIVER",
+                "STM32G474xx",
+                "PLATFORM_STM32G474",
+                "TARGET_APP",
+                "COMPILE_FOR_RUN_REGION"
+            ],
+            "compilerPath": "arm-none-eabi-gcc.exe", 
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "gcc-arm",
+            "configurationProvider": "ms-vscode.cmake-tools"
+        }
+    ],
+    "version": 4
+}

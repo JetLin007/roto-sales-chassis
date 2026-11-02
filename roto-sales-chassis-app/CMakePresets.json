@@ -1,0 +1,16 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "gcc-arm",
+      "displayName": "GCC ARM Embedded",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "E:/tools/arm-gnu-toolchain-15.3.rel2-mingw-w64-x86_64-arm-none-eabi/bin/arm-none-eabi-gcc.exe",
+        "CMAKE_CXX_COMPILER": "E:/tools/arm-gnu-toolchain-15.3.rel2-mingw-w64-x86_64-arm-none-eabi/bin/arm-none-eabi-g++.exe",
+        "CMAKE_ASM_COMPILER": "E:/tools/arm-gnu-toolchain-15.3.rel2-mingw-w64-x86_64-arm-none-eabi/bin/arm-none-eabi-gcc.exe"
+      }
+    }
+  ]
+}

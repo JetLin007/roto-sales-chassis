@@ -1,0 +1,28 @@
+# 编译输出目录
+build/
+**/build/
+out/
+
+# 调试与编辑器配置
+#.vscode/
+*.code-workspace
+
+# 编译中间文件
+*.o
+*.obj
+*.elf
+*.bin
+*.hex
+*.map
+*.d
+*.lst
+*.su
+
+# 操作系统生成的文件
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 临时文件
+*.log
+*.tmp

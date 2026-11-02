@@ -1,0 +1,52 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build APP",
+            "type": "shell",
+            "command": "cmake --build roto-sales-chassis-app/build",
+            "problemMatcher": ["$gcc"],
+            "group": "build"
+        },
+        {
+            "label": "Build BOOT",
+            "type": "shell",
+            "command": "cmake --build roto-sales-chassis-boot/build",
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "Build STM32 Project",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "build"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "Flash to STM32 (OpenOCD)",
+            "type": "shell",
+            "command": "E:/tools/OpenOCD-20260302-0.12.0/bin/openocd.exe",
+            "args": [
+                "-f", "interface/cmsis-dap.cfg",
+                "-f", "target/stm32g4x.cfg",
+                "-c", "program ${workspaceFolder}/build/roto_sales_chassis_app.elf verify reset exit"
+            ],
+            "options": {
+                "env": {
+                    "OPENOCD_SCRIPTS": "E:/tools/OpenOCD-20260302-0.12.0/share/openocd/scripts"
+                }
+            },
+            "dependsOn": ["Build STM32 Project"],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        }
+    ]
+}

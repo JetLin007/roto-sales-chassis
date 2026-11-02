@@ -1,0 +1,10 @@
+{
+    "cmake.cmakePath": "E:/Program Files/CMake/bin/cmake.exe",
+    "cmake.sourceDirectory": "E:/workspace/Develop-Coding/roto-sales-chassis/roto-sales-chassis-boot",
+    "cmake.generator": "Ninja",
+    "cmake.configureOnOpen": false,
+    "cmake.buildDirectory": "${workspaceFolder}/build",
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "cmake.cmakePath": "E:/Program Files/CMake/bin/cmake.exe",
+    "git.path": "E:/Program Files/Git/cmd/git.exe"
+}
