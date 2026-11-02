@@ -1,5 +1,3 @@
----
-
 # 🚀 Roto Sales Chassis (AGV 差速底盘控制系统)
 
 基于 STM32G474 的两轮差速 AGV 控制系统，采用现代 CMake 构建体系，支持 RS485/CAN 通信以及基于外部 SPI Flash 的高可靠 OTA 固件升级。
@@ -52,21 +50,16 @@ cmake --preset gcc-arm
 
 # 2. 编译项目
 cmake --build build
-```
-
-编译结束后，终端会自动打印出极简的 `Memory region` 占用表。
-
-### 烧录与调试
-在 VS Code 中按下 `F5`，或选择左侧“运行和调试”面板中的 `Debug APP` 或 `Debug BOOT`。配置会自动调用 OpenOCD 进行烧录。
-
-## 🚀 开发进度记录
-- [x] 搭建基于 CMake + VS Code 的现代双工程编译链 (GCC 15.3)
-- [x] 完成内部 Flash 驱动与外部 SPI Flash (W25Q128) 的跨平台抽象层
-- [x] 完成 OTA 标志区的读写管理模块
-- [x] 实现 Bootloader 的搬运、重试计数与跳转逻辑
-- [x] 实现 APP 端的固件接收缓存到外部 Flash 机制
-- [ ] **实现 RS485 (Modbus) 固件传输协议** (进行中)
-- [ ] 联调完整 OTA 闭环与回滚测试
-```
-
----
+￼
+￼
+编译结束后，终端会自动打印出极简的 Memory region 占用表。
+烧录与调试
+在 VS Code 中按下 F5，或选择左侧“运行和调试”面板中的 Debug APP 或 Debug BOOT。配置会自动调用 OpenOCD 进行烧录。
+🚀 开发进度记录
+☑ 搭建基于 CMake + VS Code 的现代双工程编译链 (GCC 15.3)
+☑ 完成内部 Flash 驱动与外部 SPI Flash (W25Q128) 的跨平台抽象层
+☑ 完成 OTA 标志区的读写管理模块
+☑ 实现 Bootloader 的搬运、重试计数与跳转逻辑
+☑ 实现 APP 端的固件接收缓存到外部 Flash 机制
+□ 实现 RS485 (Modbus) 固件传输协议 (进行中)
+□ 联调完整 OTA 闭环与回滚测试
