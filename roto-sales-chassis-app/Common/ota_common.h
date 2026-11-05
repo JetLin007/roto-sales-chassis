@@ -2,6 +2,15 @@
 #define __OTA_COMMON_H__
 
 #include <stdint.h>
+#include "ota_config.h"
+
+/* --- 版本号字符串化处理 --- */
+// 辅助宏
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+
+// 拼接成完整的版本字符串，例如 "v1.0.5"
+#define FW_VERSION_STR  "v" TOSTRING(FW_VERSION_MAJOR) "." TOSTRING(FW_VERSION_MINOR) "." TOSTRING(FW_VERSION_PATCH)
 
 /* ==================== 内部 Flash 规划 (512KB) ==================== */
 #define BOOTLOADER_START_ADDR   0x08000000  // 32KB/64KB

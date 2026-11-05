@@ -125,6 +125,7 @@ int main(void)
   /* USER CODE END 2 */
 
   printf("\r\n===== APP BOOT SUCCESS =====\r\n");
+  printf("Firmware Version: %s\r\n", FW_VERSION_STR); // 打印版本号
   printf("OTA_Manager_Init done\r\n");
   printf("App_OTA_CheckAndConfirm done\r\n");
   printf("Starting FreeRTOS scheduler...\r\n");

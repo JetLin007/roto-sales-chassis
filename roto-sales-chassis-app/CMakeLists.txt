@@ -3,6 +3,14 @@
 # ============================================================================
 cmake_minimum_required(VERSION 3.22)
 
+# 版本号定义 (Major.Minor.Patch)
+add_compile_definitions(
+    # ... 原有的宏定义 ...
+    FW_VERSION_MAJOR=1
+    FW_VERSION_MINOR=0
+    FW_VERSION_PATCH=0
+)
+
 # 1. 交叉编译配置
 set(CMAKE_SYSTEM_NAME Generic)
 set(CMAKE_SYSTEM_PROCESSOR arm)
