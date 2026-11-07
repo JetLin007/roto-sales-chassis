@@ -25,6 +25,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "app_ymodem.h"
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -90,6 +91,17 @@ void NMI_Handler(void)
 void HardFault_Handler(void)
 {
   /* USER CODE BEGIN HardFault_IRQn 0 */
+  {
+    const char msg[] = "\r\n*** HARDFAULT ***\r\n";
+    HAL_UART_Transmit(&huart1, (uint8_t *)msg, sizeof(msg) - 1, 1000);
+    /* 尝试打印故障寄存器 */
+    char buf[96];
+    int n = snprintf(buf, sizeof(buf),
+      "SCB->CFSR=0x%08lX HFSR=0x%08lX MMFAR=0x%08lX BFAR=0x%08lX\r\n",
+      (unsigned long)SCB->CFSR, (unsigned long)SCB->HFSR,
+      (unsigned long)SCB->MMFAR, (unsigned long)SCB->BFAR);
+    HAL_UART_Transmit(&huart1, (uint8_t *)buf, (uint16_t)n, 1000);
+  }
   /* USER CODE END HardFault_IRQn 0 */
   while (1)
   {
@@ -104,7 +116,10 @@ void HardFault_Handler(void)
 void MemManage_Handler(void)
 {
   /* USER CODE BEGIN MemoryManagement_IRQn 0 */
-
+  {
+    const char msg[] = "\r\n*** MEMMANAGE FAULT ***\r\n";
+    HAL_UART_Transmit(&huart1, (uint8_t *)msg, sizeof(msg) - 1, 1000);
+  }
   /* USER CODE END MemoryManagement_IRQn 0 */
   while (1)
   {
@@ -119,7 +134,10 @@ void MemManage_Handler(void)
 void BusFault_Handler(void)
 {
   /* USER CODE BEGIN BusFault_IRQn 0 */
-
+  {
+    const char msg[] = "\r\n*** BUSFAULT ***\r\n";
+    HAL_UART_Transmit(&huart1, (uint8_t *)msg, sizeof(msg) - 1, 1000);
+  }
   /* USER CODE END BusFault_IRQn 0 */
   while (1)
   {
@@ -242,15 +260,5 @@ void USART3_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
-uint8_t rx_byte;
-/* 串口接收完成回调 */
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-    if (huart->Instance == USART3) {
-        // 把收到的字节喂给 YModem 状态机
-        App_YModem_RxByte(rx_byte);
-        
-        // 重新开启中断，准备接收下一个字节
-        HAL_UART_Receive_IT(&huart3, &rx_byte, 1);
-    }
-}
+
 /* USER CODE END 1 */

@@ -19,7 +19,7 @@ pFunction JumpToApplication;
 
 /* 外部 Flash 搬运到内部 Flash 的缓冲区 (1KB) */
 #define COPY_BUFFER_SIZE 1024
-static uint8_t copy_buffer[COPY_BUFFER_SIZE];
+static uint8_t copy_buffer[COPY_BUFFER_SIZE] __attribute__((aligned(8)));
 
 /* --- 简易点灯调试函数 --- */
 // 闪烁 times 次，每次间隔约 0.5 秒
@@ -165,6 +165,7 @@ void Boot_MainStateMachine(void) {
 
     // 1. 初始化标志区 (会读取状态)
     OTA_Manager_Init();
+    ExtFlash_Driver.init();
     OTA_Flag_t *flag = OTA_Get_Flag();
     
     // 2. 如果标志区还是首次运行(无魔数)，或者状态是 IDLE，且已经有下载好的固件

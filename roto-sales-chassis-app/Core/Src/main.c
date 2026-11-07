@@ -125,9 +125,9 @@ int main(void)
   /* USER CODE END 2 */
 
   printf("\r\n===== APP BOOT SUCCESS =====\r\n");
-  printf("Firmware Version: %s\r\n", FW_VERSION_STR); // 打印版本号
-  printf("OTA_Manager_Init done\r\n");
-  printf("App_OTA_CheckAndConfirm done\r\n");
+  printf("Firmware Version: %s\r\n", FW_VERSION_STR);
+  // 🌟 在这里调用打印标志区信息
+  OTA_PrintFlagInfo();
   printf("Starting FreeRTOS scheduler...\r\n");
 
   /* Call init function for freertos objects (in freertos.c) */

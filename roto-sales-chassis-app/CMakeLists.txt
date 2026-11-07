@@ -3,12 +3,19 @@
 # ============================================================================
 cmake_minimum_required(VERSION 3.22)
 
-# 版本号定义 (Major.Minor.Patch)
+# 1. 在 CMake 中定义版本号变量 (以后发版只改这里)
+set(FW_VER_MAJOR 1)
+set(FW_VER_MINOR 0)
+set(FW_VER_PATCH 0)
+
+# 2. 自动拼接出字符串版本号 (例如 "v1.0.0")
+set(VERSION_STR "v${FW_VER_MAJOR}.${FW_VER_MINOR}.${FW_VER_PATCH}")
+
+# 3. 将这几个数字传给 C 编译器，供代码中打印使用
 add_compile_definitions(
-    # ... 原有的宏定义 ...
-    FW_VERSION_MAJOR=1
-    FW_VERSION_MINOR=0
-    FW_VERSION_PATCH=0
+    FW_VERSION_MAJOR=${FW_VER_MAJOR}
+    FW_VERSION_MINOR=${FW_VER_MINOR}
+    FW_VERSION_PATCH=${FW_VER_PATCH}
 )
 
 # 1. 交叉编译配置
@@ -133,10 +140,16 @@ target_link_options(${CMAKE_PROJECT_NAME}.elf PRIVATE
 # 10. 后处理：生成 BIN / HEX 及尺寸统计
 # ============================================================================
 add_custom_command(TARGET ${CMAKE_PROJECT_NAME}.elf POST_BUILD
-    COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${CMAKE_PROJECT_NAME}.elf> ${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}.bin
-    COMMAND ${CMAKE_OBJCOPY} -O ihex   $<TARGET_FILE:${CMAKE_PROJECT_NAME}.elf> ${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}.hex
+    # 1. 生成带版本号的 bin
+    COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${CMAKE_PROJECT_NAME}.elf> ${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}_${VERSION_STR}.bin
+    
+    # 2. 复制一份不带版本号的，专门给 OpenOCD 烧录脚本用
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}_${VERSION_STR}.bin ${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}.bin
+    
+    # 3. 生成 hex 和打印大小
+    COMMAND ${CMAKE_OBJCOPY} -O ihex $<TARGET_FILE:${CMAKE_PROJECT_NAME}.elf> ${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}_${VERSION_STR}.hex
     COMMAND ${CMAKE_SIZE} $<TARGET_FILE:${CMAKE_PROJECT_NAME}.elf>
-    COMMENT "Generating BIN/HEX firmware, printing size..."
+    COMMENT "Generating BIN/HEX with version ${VERSION_STR}..."
 )
 
 # ============================================================================

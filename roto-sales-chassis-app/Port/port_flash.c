@@ -1,6 +1,7 @@
 #include "port_flash.h"
 #include "stm32g4xx_hal.h"
 #include "ota_config.h"
+#include <string.h>
 
 static Flash_Status_t stm32_flash_init(void) {
     // 解锁 Flash
@@ -15,6 +16,8 @@ static Flash_Status_t stm32_flash_erase_sector(uint32_t addr) {
     // 检查是否 2KB 对齐 (G474 Page size = 2KB)
     if (addr % 2048 != 0) return FLASH_ERR_ALIGN;
 
+    __disable_irq();
+
     // 结合正点原子手册 433 页提示：擦除期间必须关闭数据缓存
     FLASH->ACR &= ~(1 << 10); 
 
@@ -25,10 +28,12 @@ static Flash_Status_t stm32_flash_erase_sector(uint32_t addr) {
 
     if (HAL_FLASHEx_Erase(&EraseInitStruct, &PageError) != HAL_OK) {
         FLASH->ACR |= (1 << 10); // 恢复缓存
+        __enable_irq();
         return FLASH_ERR_ERASE;
     }
 
     FLASH->ACR |= (1 << 10); // 恢复缓存
+    __enable_irq();
     return FLASH_OK;
 }
 
@@ -37,7 +42,8 @@ static Flash_Status_t stm32_flash_write(uint32_t addr, const uint8_t *data, uint
     if (addr % 8 != 0 || len % 8 != 0) return FLASH_ERR_ALIGN;
 
     for (uint32_t i = 0; i < len; i += 8) {
-        uint64_t double_word = *(uint64_t *)(data + i);
+        uint64_t double_word;
+        memcpy(&double_word, data + i, sizeof(double_word));
         if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, addr + i, double_word) != HAL_OK) {
             return FLASH_ERR_WRITE;
         }

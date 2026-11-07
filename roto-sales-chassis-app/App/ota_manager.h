@@ -22,4 +22,7 @@ void OTA_Update_Flag(OTA_Flag_t *new_flag);
 /* 清除标志区 (恢复出厂状态，用于 APP 启动确认后) */
 void OTA_Clear_Flag(void);
 
+/* 打印当前的 OTA 标志区信息 */
+void OTA_PrintFlagInfo(void);
+
 #endif /* __OTA_MANAGER_H__ */

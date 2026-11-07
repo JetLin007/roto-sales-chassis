@@ -2,6 +2,7 @@
 #include "main.h" // 包含 HAL 库和引脚定义
 #include "spi.h"
 #include <string.h>
+#include <stdio.h>
 
 // 假设 CubeMX 配置的 SPI 句柄叫 hspi1
 extern SPI_HandleTypeDef hspi1;
@@ -20,18 +21,29 @@ extern SPI_HandleTypeDef hspi1;
 
 /* 内部辅助函数：SPI 收发一个字节 */
 static uint8_t spi_transfer(uint8_t tx_data) {
-    uint8_t rx_data = 0;
-    HAL_SPI_TransmitReceive(&hspi1, &tx_data, &rx_data, 1, 1000);
+    uint8_t rx_data = 0xFF;
+    HAL_StatusTypeDef st = HAL_SPI_TransmitReceive(&hspi1, &tx_data, &rx_data, 1, 100);
+    if (st != HAL_OK) {
+        return 0xFF;
+    }
     return rx_data;
 }
 
 /* 内部辅助函数：等待 Flash 空闲 */
-static void w25q_wait_busy(void) {
+static int w25q_wait_busy(void) {
     W25Q_CS_LOW();
     spi_transfer(W25Q_CMD_READ_STATUS1);
-    // 循环读取状态寄存器，直到 Busy 位(bit0)为 0
-    while ((spi_transfer(0xFF) & 0x01) == 0x01); 
+
+    uint32_t start_tick = HAL_GetTick();
+    while ((spi_transfer(0xFF) & 0x01) == 0x01) {
+        if ((HAL_GetTick() - start_tick) >= 5000) {
+            W25Q_CS_HIGH();
+            return -1;
+        }
+        HAL_Delay(1);
+    }
     W25Q_CS_HIGH();
+    return 0;
 }
 
 static Flash_Status_t w25q_init(void) {
@@ -68,7 +80,9 @@ static Flash_Status_t w25q_erase_sector(uint32_t addr) {
     W25Q_CS_HIGH();
     
     // 3. 等待擦除完成
-    w25q_wait_busy();
+    if (w25q_wait_busy() != 0) {
+        return FLASH_ERR_WRITE;
+    }
     return FLASH_OK;
 }
 
@@ -95,7 +109,9 @@ static Flash_Status_t w25q_write(uint32_t addr, const uint8_t *data, uint32_t le
     W25Q_CS_HIGH();
     
     // 4. 等待写入完成
-    w25q_wait_busy();
+    if (w25q_wait_busy() != 0) {
+        return FLASH_ERR_WRITE;
+    }
     return FLASH_OK;
 }
 

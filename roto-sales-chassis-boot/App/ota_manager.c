@@ -7,6 +7,8 @@ static OTA_Flag_t g_ota_flag_cache;
 static uint8_t g_ota_flag_initialized = 0;
 
 void OTA_Manager_Init(void) {
+    Flash_Driver.init();
+
     // 1. 从 Flash 读取当前标志区
     Flash_Driver.read(OTA_FLAG_START_ADDR, (uint8_t*)&g_ota_flag_cache, sizeof(OTA_Flag_t));
     
@@ -39,18 +41,24 @@ OTA_Flag_t* OTA_Get_Flag(void) {
 
 void OTA_Update_Flag(OTA_Flag_t *new_flag) {
     if (new_flag == NULL) return;
+
+    Flash_Driver.init();
     
     // 1. 更新 RAM 缓存
     memcpy(&g_ota_flag_cache, new_flag, sizeof(OTA_Flag_t));
     g_ota_flag_cache.magic_code = OTA_MAGIC_CODE;
     
     // 2. 擦除标志区扇区
-    Flash_Driver.erase_sector(OTA_FLAG_START_ADDR);
+    if (Flash_Driver.erase_sector(OTA_FLAG_START_ADDR) != FLASH_OK) {
+        return;
+    }
     
     // 3. 写入新数据 (G474 要求 8 字节对齐)
     uint8_t temp_buf[64] = {0};
     memcpy(temp_buf, &g_ota_flag_cache, sizeof(OTA_Flag_t));
-    Flash_Driver.write(OTA_FLAG_START_ADDR, temp_buf, 64);
+    if (Flash_Driver.write(OTA_FLAG_START_ADDR, temp_buf, 64) != FLASH_OK) {
+        return;
+    }
 }
 
 void OTA_Set_State(OTA_State_t state) {

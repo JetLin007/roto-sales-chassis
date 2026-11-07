@@ -21,4 +21,9 @@ void App_Modbus_Init(void);
 /* 获取接收完成标志和长度 (供任务调用) */
 uint8_t App_Modbus_GetFrame(uint8_t *buf, uint16_t *len);
 
+/* 开启 Modbus 接收 */
+void App_Modbus_Start(void);
+/* 暂停 Modbus 接收 */
+void App_Modbus_Stop(void);
+
 #endif /* __APP_MODBUS_H__ */

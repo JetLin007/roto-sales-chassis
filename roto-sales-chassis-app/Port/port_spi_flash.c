@@ -1,6 +1,7 @@
 #include "port_spi_flash.h"
 #include "main.h" // 包含 HAL 库和引脚定义
 #include <string.h>
+#include <stdio.h>
 
 // 假设 CubeMX 配置的 SPI 句柄叫 hspi1
 extern SPI_HandleTypeDef hspi1;
@@ -17,20 +18,43 @@ extern SPI_HandleTypeDef hspi1;
 #define W25Q_CS_LOW()   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_RESET)
 #define W25Q_CS_HIGH()  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_SET)
 
-/* 内部辅助函数：SPI 收发一个字节 */
+/* W25Q 全双工收发：SPI 读状态/读数据都依赖发送 dummy byte 产生时钟。 */
 static uint8_t spi_transfer(uint8_t tx_data) {
-    uint8_t rx_data = 0;
-    HAL_SPI_TransmitReceive(&hspi1, &tx_data, &rx_data, 1, 1000);
+    uint8_t rx_data = 0xFF;
+    HAL_StatusTypeDef st = HAL_SPI_TransmitReceive(&hspi1, &tx_data, &rx_data, 1, 100);
+    if (st != HAL_OK) {
+        printf("[FLASH] ERROR: SPI xfer failed st=%d err=0x%08lX SR=0x%08lX\r\n",
+               (int)st, (unsigned long)HAL_SPI_GetError(&hspi1),
+               (unsigned long)hspi1.Instance->SR);
+        return 0xFF;
+    }
     return rx_data;
 }
 
-/* 内部辅助函数：等待 Flash 空闲 */
-static void w25q_wait_busy(void) {
+/* 内部辅助函数：等待 Flash 空闲 (墙钟超时 5 秒) */
+static int w25q_wait_busy(void) {
     W25Q_CS_LOW();
     spi_transfer(W25Q_CMD_READ_STATUS1);
-    // 循环读取状态寄存器，直到 Busy 位(bit0)为 0
-    while ((spi_transfer(0xFF) & 0x01) == 0x01); 
+
+    uint32_t start_tick = HAL_GetTick();
+    uint8_t status = 0xFF;
+    uint32_t print_cnt = 0;
+    while (1) {
+        status = spi_transfer(0xFF);
+        if ((status & 0x01) == 0) break;      /* Busy 位清零，编程完成 */
+        if ((HAL_GetTick() - start_tick) >= 5000) {
+            W25Q_CS_HIGH();
+            printf("[FLASH] ERROR: wait_busy TIMEOUT (5s) status=0x%02X\r\n", status);
+            return -1;
+        }
+        if ((print_cnt++ % 200) == 0) {
+            printf("[FLASH] busy... status=0x%02X elapsed=%lums\r\n",
+                   status, (unsigned long)(HAL_GetTick() - start_tick));
+        }
+        HAL_Delay(1);
+    }
     W25Q_CS_HIGH();
+    return 0;
 }
 
 static Flash_Status_t w25q_init(void) {
@@ -53,6 +77,8 @@ static Flash_Status_t w25q_init(void) {
 static Flash_Status_t w25q_erase_sector(uint32_t addr) {
     if (addr % W25Q128_SECTOR_SIZE != 0) return FLASH_ERR_ALIGN;
     
+    printf("[FLASH] erase_sector start: 0x%08lX\r\n", (unsigned long)addr);
+    
     // 1. 写使能
     W25Q_CS_LOW();
     spi_transfer(W25Q_CMD_WRITE_ENABLE);
@@ -67,34 +93,47 @@ static Flash_Status_t w25q_erase_sector(uint32_t addr) {
     W25Q_CS_HIGH();
     
     // 3. 等待擦除完成
-    w25q_wait_busy();
+    if (w25q_wait_busy() != 0) {
+        printf("[FLASH] erase_sector FAILED: 0x%08lX\r\n", (unsigned long)addr);
+        return FLASH_ERR_WRITE;
+    }
+    printf("[FLASH] erase_sector done: 0x%08lX\r\n", (unsigned long)addr);
     return FLASH_OK;
 }
 
 static Flash_Status_t w25q_write(uint32_t addr, const uint8_t *data, uint32_t len) {
-    // W25Q128 最大单页写入为 256 字节，这里为了简单，假设外部传入的数据满足页对齐要求
-    // (如果需要跨页写入，需要在这里做分页处理逻辑)
-    
+    printf("[FLASH] write start: addr=0x%08lX len=%lu data[0..3]=%02X %02X %02X %02X\r\n",
+           (unsigned long)addr, (unsigned long)len,
+           data[0], data[1], data[2], data[3]);
+
     // 1. 写使能
     W25Q_CS_LOW();
     spi_transfer(W25Q_CMD_WRITE_ENABLE);
     W25Q_CS_HIGH();
-    
+    printf("[FLASH] write WREN done\r\n");
+
     // 2. 发送页写指令和 24 位地址
     W25Q_CS_LOW();
     spi_transfer(W25Q_CMD_PAGE_PROGRAM);
     spi_transfer((addr >> 16) & 0xFF);
     spi_transfer((addr >> 8) & 0xFF);
     spi_transfer(addr & 0xFF);
-    
+    printf("[FLASH] write cmd sent, sending %lu data bytes...\r\n",
+           (unsigned long)len);
+
     // 3. 发送数据
     for (uint32_t i = 0; i < len; i++) {
         spi_transfer(data[i]);
     }
     W25Q_CS_HIGH();
-    
+    printf("[FLASH] write data sent, waiting busy...\r\n");
+
     // 4. 等待写入完成
-    w25q_wait_busy();
+    if (w25q_wait_busy() != 0) {
+        printf("[FLASH] write FAILED: 0x%08lX len=%lu\r\n", (unsigned long)addr, (unsigned long)len);
+        return FLASH_ERR_WRITE;
+    }
+    printf("[FLASH] write done: 0x%08lX\r\n", (unsigned long)addr);
     return FLASH_OK;
 }
 
